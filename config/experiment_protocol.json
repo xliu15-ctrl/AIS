@@ -1,0 +1,151 @@
+{
+  "preprocessing": {
+    "split_track_when_time_gap_minutes_gt": 30,
+    "split_track_when_delta_time_minutes_lte": 0,
+    "split_track_when_calculated_speed_knots_gt": 60,
+    "drop_track_when_point_count_lt": 20,
+    "candidate_min_points": 60,
+    "candidate_min_duration_minutes": 15,
+    "candidate_min_total_distance_nm": 1.0,
+    "candidate_min_moving_point_ratio": 0.3,
+    "candidate_min_unique_positions": 30,
+    "candidate_max_p95_calculated_speed_knots": 35.0,
+    "moving_speed_threshold_knots": 0.5,
+    "valid_course": {
+      "min_sog_knots": 0.5,
+      "min_calculated_speed_knots": 0.5,
+      "min_distance_nm": 1e-06,
+      "course_change_requires_current_and_previous_valid_course": true,
+      "invalid_value_handling": {
+        "Course_Position_Mismatch_Deg": "NaN",
+        "COG_Change_Rate_Deg_Per_Min": "NaN"
+      }
+    }
+  },
+  "window_labeling": {
+    "primary_point_label": "Attack_Label",
+    "label_semantics": {
+      "Attack_Label": "generator intervention interval [s,e], including any zero-displacement boundary control points",
+      "Point_Label": "fields differ numerically from the nominal scenario",
+      "Detection_Label": "current or preceding directly modified point affects derived kinematics"
+    },
+    "window_label_rule": "overlap_ratio_at_least",
+    "attack_overlap_ratio_threshold": 0.1,
+    "fixed_before_evaluation": true,
+    "auxiliary_labels": [
+      "Point_Label",
+      "Detection_Label"
+    ]
+  },
+  "threshold_protocol": {
+    "calibration_split": "Guam validation",
+    "calibration_subset": "Window_Label=0 in all Guam validation scenarios",
+    "calibration_population_definition": "Window_Label=0 in all Guam validation scenarios, including negative context from Generators A and B; not restricted to Attack_Type=normal",
+    "target_far_values": [
+      0.01,
+      0.03,
+      0.05
+    ],
+    "frozen_threshold_evaluation_sets": [
+      "Guam test",
+      "LA"
+    ],
+    "forbidden_calibration_sets": [
+      "Guam test",
+      "LA"
+    ],
+    "table_label": "Recall under threshold calibrated to target FAR on Guam validation",
+    "quantile_method": "higher",
+    "positive_decision_rule": "score >= threshold"
+  },
+  "generators": {
+    "A": {
+      "description": "Baseline generator used for seen-generator Guam experiments.",
+      "attack_types": [
+        "sudden_jump",
+        "gradual_drift",
+        "speed_position_conflict"
+      ]
+    },
+    "B": {
+      "description": "Unseen attack generator for aggregate generator-distribution shift experiments.",
+      "attack_types": [
+        "kinematically_consistent_carry_off",
+        "boundary_free_smooth_drift",
+        "trajectory_replay"
+      ]
+    }
+  },
+  "experiment_matrix": [
+    {
+      "experiment": "A",
+      "domain": "Guam",
+      "generator": "A",
+      "purpose": "seen-domain / seen-generator"
+    },
+    {
+      "experiment": "B",
+      "domain": "LA",
+      "generator": "A",
+      "purpose": "unseen-domain / seen-generator"
+    },
+    {
+      "experiment": "C",
+      "domain": "Guam",
+      "generator": "B",
+      "purpose": "seen-domain / generator held out of supervised fitting"
+    },
+    {
+      "experiment": "D",
+      "domain": "LA",
+      "generator": "B",
+      "purpose": "unseen-domain / generator held out of supervised fitting"
+    }
+  ],
+  "modeling": {
+    "main_random_seed": 42,
+    "stability_random_seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "missing_value_policy": {
+      "HistGradientBoosting": "native NaN handling",
+      "LogisticRegression": "median imputation fitted on training data only",
+      "LinearSVM": "median imputation fitted on training data only",
+      "RandomForest": "median imputation fitted on training data only",
+      "ExtraTrees": "median imputation fitted on training data only",
+      "GRU": "per-point median imputation fitted on Guam training points only, followed by training-only standardization"
+    },
+    "uncertainty": {
+      "seed_repeats_are": "optimization and training stochasticity analysis",
+      "cluster_bootstrap_unit": "MMSI",
+      "cluster_bootstrap_repeats": 1000,
+      "cluster_bootstrap_comparison": "paired HGB minus RF on identical bootstrap samples"
+    }
+  },
+  "hard_normal_stress": {
+    "natural_subsets": [
+      "port_low_speed_frequent_turning",
+      "real_high_speed",
+      "normal_high_course_position_mismatch"
+    ],
+    "controlled_point_level_perturbations": [
+      "timestamp_jitter",
+      "ais_packet_loss",
+      "ais_duplicate",
+      "gnss_position_noise",
+      "low_speed_unstable_cog"
+    ],
+    "controlled_perturbation_processing": "modify normal point sequences, recompute kinematics, then aggregate the same 44 window features",
+    "maximum_windows_per_category_and_domain": 5000,
+    "random_seed": 42
+  }
+}

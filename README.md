@@ -14,7 +14,7 @@ Use `conda env create -f environment.yml` and `conda activate AIS_SCI_PAPER` for
 - The benchmark starts from the study's prepared scenario or window files. To build windows from scenario CSVs, use `src/07_build_sliding_window_dataset.py` and `src/src/17_la_06_build_external_windows_v2.py`. The expected directories are `data/synthetic_v2/` and `external_validation/la_2025/synthetic_v3/`. The scenario files and generators are outside this analysis release.
 - With the prepared Guam train, validation and test window CSVs in `data/windows_v1/` and the LA test windows in `external_validation/la_2025/windows_v2/`, run `python src/08_train_baseline_models.py` for the five tabular classifiers. The sequential GRU benchmark also requires the corresponding point-level scenario files. Run it with `python src/src/24b_gru_main_benchmark.py`.
 - After tabular training, run `python src/src/23_mmsi_cluster_bootstrap_1000.py` for window-level uncertainty or `python src/src/29_event_level_cluster_bootstrap.py` for event-level uncertainty. The adapted Kalman/NIS comparator is in `scripts/reviewer_t4_cv_kalman_baseline.py`.
-- Generate the manuscript workflow diagram with `python scripts/plot_workflow.py workflow.pdf`.
+- In PyCharm, run the file scripts/plot_workflow.py with the project interpreter to write PDF, SVG and PNG files under figures/. To specify one output, use `python scripts/plot_workflow.py workflow.pdf`.
 
 The included bootstrap CSV contains summary statistics for resamples. Vessel-level records and fitted model files are external inputs. The paper's Data Availability section identifies the original AIS data sources.
 
